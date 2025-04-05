@@ -7,8 +7,7 @@ const ResumeSchema = new mongoose.Schema({
     required: true,
   },
   content: {
-    type: String,
-    required: true,
+    type: String, // required: true, // Commented out the required validation
   },
   creationDate: {
     type: Date,
