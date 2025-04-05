@@ -1,17 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Roadmap = require("../models/Roadmap");
-
-try {
-  const fetch = require("node-fetch");
-} catch (error) {
-  console.error("fetch ni hua");
-}
-
-console.log("node-fetch loaded:", typeof fetch);
-if (typeof fetch !== "function") {
-  console.error("node-fetch did NOT load correctly!");
-}
+const fetch = require("node-fetch").default;
+const mongoose = require("mongoose");
 
 const generateRoadmap = async (data) => {
   try {
@@ -55,11 +46,14 @@ const generateRoadmap = async (data) => {
   }
 };
 
+// Modified route to handle POST requests directly to /api/roadmaps
 router.post("/", async (req, res) => {
-  const { goals, skills, title } = req.body;
+  const { goals, skills, title, userId } = req.body;
 
-  if (!goals || !skills) {
-    return res.status(400).json({ message: "Goals and skills are required." });
+  if (!goals || !skills || !userId) {
+    return res
+      .status(400)
+      .json({ message: "Goals, skills, and userId are required." });
   }
 
   if (goals.length > 6 || skills.length > 6) {
@@ -69,11 +63,11 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    console.log("Request Body:", req.body);
-    const prompt = `Generate an AI roadmap based on goals: ${goals.join(
+    const prompt = `Generate a personalized learning roadmap based on the following goals: ${goals.join(
       ", "
-    )} and skills: ${skills.join(", ")}.`;
-    console.log("Prompt to AI API:", prompt);
+    )} and current skills: ${skills.join(
+      ", "
+    )}. The roadmap should include specific topics, potential resources, and a suggested learning order.`;
 
     const roadmapAi = await generateRoadmap(prompt);
 
@@ -85,9 +79,8 @@ router.post("/", async (req, res) => {
       });
     }
 
-    console.log("Roadmap AI Response:", roadmapAi);
-
-    if (!roadmapAi.bio) {
+    const aiResponse = roadmapAi.bio || roadmapAi.content;
+    if (!aiResponse) {
       console.error("Unexpected AI API response:", roadmapAi);
       return res.status(500).json({
         message: "Unexpected response format from AI API.",
@@ -95,32 +88,34 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const aiResponse = roadmapAi.bio;
-    console.log("AI response content:", aiResponse);
-
-    const userId = "67e6e9a846db7a0f471f9c35";
+    let objectId;
+    try {
+      console.log("Attempting to convert userId:", userId);
+      objectId = new mongoose.Types.ObjectId(userId);
+    } catch (error) {
+      console.error("Invalid userId format:", error);
+      return res.status(400).json({ message: "Invalid userId format." });
+    }
 
     const roadmap = new Roadmap({
-      title: title || "Default Roadmap Title",
-      userId: userId,
+      title: title || "Personalized Roadmap",
+      userId: objectId,
       userInput: { goals, skills },
       description: aiResponse,
+      aiRoadmapId: roadmapAi.id,
     });
-
-    console.log("Roadmap object:", roadmap);
 
     await roadmap.save();
-    console.log("Roadmap saved successfully.");
-
     res.status(201).json({
-      message: "Roadmap data received successfully.",
-      roadmap: aiResponse,
+      message: "Roadmap generated and saved successfully.",
+      roadmap: roadmap,
     });
   } catch (error) {
-    console.error("Error generating roadmap:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to generate roadmap.", error: error.message });
+    console.error("Error generating and saving roadmap:", error);
+    res.status(500).json({
+      message: "Failed to generate and save roadmap.",
+      error: error.message,
+    });
   }
 });
 
