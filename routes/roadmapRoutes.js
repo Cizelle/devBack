@@ -46,7 +46,6 @@ const generateRoadmap = async (data) => {
   }
 };
 
-// Modified route to handle POST requests directly to /api/roadmaps
 router.post("/", async (req, res) => {
   const { goals, skills, title, userId } = req.body;
 

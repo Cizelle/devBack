@@ -14,7 +14,7 @@ const ResourceSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["tutorial", "article", "video", "document", "other"], // Example categories
+    enum: ["tutorial", "article", "video", "document", "other"],
     default: "other",
   },
   verified: {

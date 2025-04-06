@@ -21,7 +21,7 @@ const userRoutes = require("./routes/userRoutes.js");
 const roadmapRoutes = require("./routes/roadmapRoutes.js");
 const resourceRoutes = require("./routes/resourceRoutes.js");
 const resumeRoutes = require("./routes/resumeRoutes.js");
-const uploadRoutes = require("./routes/uploadRoutes.js"); // Import uploadRoutes
+const uploadRoutes = require("./routes/uploadRoutes.js");
 
 app.use("/users", userRoutes);
 app.use("/api/roadmaps", roadmapRoutes);

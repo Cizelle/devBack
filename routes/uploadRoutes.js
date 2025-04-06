@@ -65,7 +65,7 @@ router.post(
         .json({ message: "Resume uploaded successfully!", file: req.file });
     } catch (error) {
       console.error("Error saving resume info:", error);
-      console.error("Error details:", error.stack); // Log the stack trace
+      console.error("Error details:", error.stack);
       res.status(500).json({
         message: "Failed to save resume information.",
         error: error.message,
