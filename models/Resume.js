@@ -6,8 +6,17 @@ const ResumeSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  filename: {
+    type: String,
+  },
+  filePath: {
+    type: String,
+  },
+  mimeType: {
+    type: String,
+  },
   content: {
-    type: String, // required: true, // Commented out the required validation
+    type: String,
   },
   creationDate: {
     type: Date,

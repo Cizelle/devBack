@@ -4,6 +4,8 @@ const multer = require("multer");
 const path = require("path");
 const Resume = require("../models/Resume");
 const mongoose = require("mongoose");
+const pdf = require("pdf-parse");
+const fs = require("fs").promises;
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -40,10 +42,23 @@ router.post(
         filename: req.file.originalname,
         filePath: req.file.path,
         mimeType: req.file.mimetype,
-        content: undefined,
+        content: "Resume file uploaded",
       });
 
       await newResume.save();
+
+      if (req.file.mimetype === "application/pdf") {
+        try {
+          const dataBuffer = await fs.readFile(req.file.path);
+          const pdfData = await pdf(dataBuffer);
+          const extractedText = pdfData.text;
+
+          await Resume.findByIdAndUpdate(newResume._id, { extractedText });
+          console.log("PDF text extracted and saved to database.");
+        } catch (error) {
+          console.error("Error parsing PDF:", error);
+        }
+      }
 
       res
         .status(200)

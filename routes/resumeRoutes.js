@@ -34,4 +34,16 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+router.get("/extracted/:userId", async (req, res) => {
+  try {
+    const resume = await Resume.findOne({ userId: req.params.userId });
+    if (!resume) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+    res.json({ extractedText: resume.extractedText || "" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
